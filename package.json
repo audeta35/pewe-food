@@ -1,8 +1,8 @@
 {
-  "name": "material-kit-react",
-  "author": "Devias IO",
+  "name": "pewe-food",
+  "author": "audeta35",
   "licence": "MIT",
-  "version": "2.0.0",
+  "version": "1.0.0",
   "private": false,
   "scripts": {
     "dev": "next",
@@ -23,6 +23,7 @@
     "@mui/styles": "^5.0.2",
     "chart.js": "^3.5.1",
     "date-fns": "^2.25.0",
+    "firebase": "^9.8.2",
     "formik": "^2.1.5",
     "history": "^5.0.0",
     "next": "^12.0.3-canary.7",
@@ -38,5 +39,16 @@
   "devDependencies": {
     "eslint": "^7.32.0",
     "eslint-config-next": "12.0.3-canary.7"
-  }
+  },
+  "description": "pos app",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/audeta35/pewe-food.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/audeta35/pewe-food/issues"
+  },
+  "homepage": "https://github.com/audeta35/pewe-food#readme"
 }
