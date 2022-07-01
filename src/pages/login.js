@@ -7,13 +7,22 @@ import { Box, Button, Container, Grid, Link, TextField, Typography } from '@mui/
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { Facebook as FacebookIcon } from '../icons/facebook';
 import { Google as GoogleIcon } from '../icons/google';
+import { v4 as uuidv4 } from 'uuid';
+import { provider, database } from '../firebase/config';
+import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { set, ref, onValue } from "firebase/database";
+import React, { useEffect } from 'react';
+
+
+const LocalStorage = require('local-storage');
+const auth = getAuth();
 
 const Login = () => {
   const router = useRouter();
   const formik = useFormik({
     initialValues: {
-      email: 'demo@devias.io',
-      password: 'Password123'
+      email: '',
+      password: ''
     },
     validationSchema: Yup.object({
       email: Yup
@@ -30,9 +39,69 @@ const Login = () => {
           'Password is required')
     }),
     onSubmit: () => {
+      LocalStorage.set('token', uuidv4())
       router.push('/');
     }
   });
+
+  // useEffect(() => {
+  //   getUserData()
+  // }, [])
+
+  const GoogleAuth = () => {
+    console.log('proses login')
+
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        // This gives you a Google Access Token. You can use it to access the Google API.
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        const token = credential.accessToken;
+        // The signed-in user info.
+        const user = result.user;
+
+        console.log('berhasil login')
+        console.log('user', result.user.accessToken)
+        console.log('user', result.user)
+        const userCheck = getUserData(result?.user?.uid) || null;
+        if(!userCheck) {
+          writeUserData(result.user.uid, result.user.displayName, result.user.email, result.user.photoURL)
+        }
+        LocalStorage.set('token', result.user.accessToken)
+        router.push('/');
+        // ...
+      }).catch((error) => {
+        // Handle Errors here.
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        // The email of the user's account used.
+        const email = error.customData.email;
+        // The AuthCredential type that was used.
+        const credential = GoogleAuthProvider.credentialFromError(error);
+        // ...
+
+        console.log("error", errorMessage);
+      });
+  }
+
+  const writeUserData = (userId, name, email, imageUrl) => {
+    set(ref(database, 'users/' + userId), {
+      username: name,
+      email: email,
+      profile_picture: imageUrl,
+      role: "guest"
+    });
+  }
+
+  const getUserData = (uid) => {
+    const key = ref(database, 'users/' + uid)
+    let data = {};
+    onValue(key, (snapshot) => {
+      // console.log(snapshot.val())
+      data = snapshot.val()
+    })
+    console.log("data", data)
+    return data
+  }
 
   return (
     <>
@@ -49,31 +118,20 @@ const Login = () => {
         }}
       >
         <Container maxWidth="sm">
-          <NextLink
-            href="/"
-            passHref
-          >
-            <Button
-              component="a"
-              startIcon={<ArrowBackIcon fontSize="small" />}
-            >
-              Dashboard
-            </Button>
-          </NextLink>
           <form onSubmit={formik.handleSubmit}>
             <Box sx={{ my: 3 }}>
               <Typography
                 color="textPrimary"
                 variant="h4"
               >
-                Sign in
+                Pewe Food
               </Typography>
               <Typography
                 color="textSecondary"
                 gutterBottom
                 variant="body2"
               >
-                Sign in on the internal platform
+                Akses menggunakan akun google
               </Typography>
             </Box>
             <Grid
@@ -83,37 +141,21 @@ const Login = () => {
               <Grid
                 item
                 xs={12}
-                md={6}
-              >
-                <Button
-                  color="info"
-                  fullWidth
-                  startIcon={<FacebookIcon />}
-                  onClick={formik.handleSubmit}
-                  size="large"
-                  variant="contained"
-                >
-                  Login with Facebook
-                </Button>
-              </Grid>
-              <Grid
-                item
-                xs={12}
-                md={6}
+                md={12}
               >
                 <Button
                   fullWidth
                   color="error"
-                  startIcon={<GoogleIcon />}
-                  onClick={formik.handleSubmit}
+                  startIcon={<GoogleIcon fontSize='small' />}
+                  onClick={GoogleAuth}
                   size="large"
                   variant="contained"
                 >
-                  Login with Google
+                  Masuk atau daftar dengan Google
                 </Button>
               </Grid>
             </Grid>
-            <Box
+            {/* <Box
               sx={{
                 pb: 1,
                 pt: 3
@@ -164,28 +206,7 @@ const Login = () => {
               >
                 Sign In Now
               </Button>
-            </Box>
-            <Typography
-              color="textSecondary"
-              variant="body2"
-            >
-              Don&apos;t have an account?
-              {' '}
-              <NextLink
-                href="/register"
-              >
-                <Link
-                  to="/register"
-                  variant="subtitle2"
-                  underline="hover"
-                  sx={{
-                    cursor: 'pointer'
-                  }}
-                >
-                  Sign Up
-                </Link>
-              </NextLink>
-            </Typography>
+            </Box> */}
           </form>
         </Container>
       </Box>

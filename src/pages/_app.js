@@ -1,18 +1,28 @@
+import React, { useEffect, useState } from 'react'
 import Head from 'next/head';
 import { CacheProvider } from '@emotion/react';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
-import { CssBaseline } from '@mui/material';
+import { CssBaseline, Typography } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import { createEmotionCache } from '../utils/create-emotion-cache';
 import { theme } from '../theme';
-
+import 'bootstrap/dist/css/bootstrap.min.css';
+import Login from './login';
+// import {FirebaseApp} from '../firebase/config';
+const LocalStorage = require('local-storage');
 const clientSideEmotionCache = createEmotionCache();
 
 const App = (props) => {
   const { Component, emotionCache = clientSideEmotionCache, pageProps } = props;
-
+  const token = LocalStorage.get('token') || null;
   const getLayout = Component.getLayout ?? ((page) => page);
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    // console.log('firebase: ', FirebaseApp)
+    setIsLoading(false)
+  }, [])
 
   return (
     <CacheProvider value={emotionCache}>
@@ -28,7 +38,13 @@ const App = (props) => {
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <ThemeProvider theme={theme}>
           <CssBaseline />
-          {getLayout(<Component {...pageProps} />)}
+          {
+            isLoading ? (
+              <Typography>Loading...</Typography>
+            ) : token ? getLayout(<Component {...pageProps} />) : (
+              <Login />
+            )
+          }
         </ThemeProvider>
       </LocalizationProvider>
     </CacheProvider>
